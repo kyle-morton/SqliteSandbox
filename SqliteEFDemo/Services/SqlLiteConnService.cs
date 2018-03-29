@@ -15,50 +15,68 @@ namespace SqliteEFDemo
     {
         private string _connectionString => ConfigurationManager.AppSettings["connectionString"];
 
-        public List<Track> GetData()
+        #region CONN STRING
+
+        private SQLiteConnection GetConnection()
         {
-            var list = new List<Track>();
+            return new SQLiteConnection(_connectionString);
+        }
+
+        #endregion
+
+        #region GET RECORD(S)
+
+        public T GetRecord<T>(string query)
+        {
+            T result = default(T);
             try
             {
-                using (SQLiteConnection conn = new SQLiteConnection(_connectionString))
+
+                using (SQLiteConnection conn = GetConnection())
                 {
                     conn.Open();
-                    //string sql = "SELECT * FROM tracks; ";
-                    string sql = "SELECT TrackId, Name, AlbumId, MediaTypeId, GenreId, Composer, Milliseconds, Bytes, UnitPrice FROM tracks;";
-
-                    var results = conn.Query<Track>(sql).ToList();
-
-                    using (SQLiteCommand cmd = new SQLiteCommand(sql, conn))
-                    {
-                        using (SQLiteDataReader reader = cmd.ExecuteReader())
-                        {
-                            if (reader.HasRows)
-                            {
-                                var records = reader.Cast<IDataRecord>().ToList();
-                                list = MappingUtil.ToTracks(records);
-                            }
-                            if (reader.HasRows)
-                            {
-                                while (reader.Read())
-                                {
-                                    var EmployeeId = reader["TrackId"].ToString();
-                                    var LastName = reader["Name"].ToString();
-                                }
-                            }
-                        }
-                    }
+                    result = conn.Query<T>(query).SingleOrDefault();
                     conn.Close();
                 }
+
             }
             catch (SQLiteException e)
             {
                 Console.WriteLine("Ex: " + e);
             }
 
+            return result;
+        }
+
+        public List<T> GetRecords<T>(string query)
+        {
+            var list = new List<T>();
+            try {
+
+                using (SQLiteConnection conn = GetConnection()) { 
+                    conn.Open();
+                    list = conn.Query<T>(query).ToList();
+                    conn.Close();
+                }
+
+            } catch (SQLiteException e) {
+                Console.WriteLine("Ex: " + e);
+            }
+
             return list;
         }
 
+        #endregion
 
+        public List<Track> GetTracks()
+        {
+            return GetRecords<Track>("SELECT * FROM tracks;");
+        }
+
+        public Track GetTrack(int id)
+        {
+            return GetRecord<Track>($"SELECT * FROM tracks WHERE TrackId = {id};");
+        }
 
     }
 }

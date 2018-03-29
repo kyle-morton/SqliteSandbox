@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace SqliteEFDemo.Models
 {
-    public class Track
+    public class Track : ModelBase
     {
         public int TrackId { get; set; }
         public string Name { get; set; }

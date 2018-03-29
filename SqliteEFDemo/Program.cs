@@ -10,7 +10,8 @@ namespace SqliteEFDemo
     {
         static void Main(string[] args)
         {
-            new SqlLiteConnService().GetData();
+            var tracks = new SqlLiteConnService().GetTracks();
+            var track = new SqlLiteConnService().GetTrack(691);
             Console.WriteLine("After Data...");
             Console.ReadLine();
         }
